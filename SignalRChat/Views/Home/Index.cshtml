@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerçek Zamanlı Chat</title>
+</head>
+<body>
+    <div>
+        <input type="text" id="username" placeholder="Kullanıcı Adı" />
+        <input type="text" id="message" placeholder="Mesajınızı girin" />
+        <button onclick="sendMessage()">Gönder</button>
+    </div>
+    <div id="chat"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.0/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+        connection.on("ReceiveMessage", (user, message) => {
+            const chatDiv = document.getElementById("chat");
+            const messageElement = document.createElement("p");
+            messageElement.textContent = `${user}: ${message}`;
+            chatDiv.appendChild(messageElement);
+        });
+
+        connection.start()
+            .then(() => console.log("SignalR bağlantısı başarılı!"))
+            .catch(err => console.error(err));
+
+        function sendMessage() {
+            const user = document.getElementById("username").value;
+            const message = document.getElementById("message").value;
+            connection.invoke("SendMessage", user, message).catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>
